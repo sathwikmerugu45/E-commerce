@@ -32,18 +32,18 @@ const AdminPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchOrders = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/orders/all');
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      const data = await response.json();
-      setOrders(data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load orders. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const response = await fetch(`${process.env.REACT_APP_API_URL}/orders/all`);
+    if (!response.ok) throw new Error('Failed to fetch orders');
+    const data = await response.json();
+    setOrders(data);
+    setError(null);
+  } catch (err) {
+    setError('Failed to load orders. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     document.title = 'Admin Dashboard | Eclypse';

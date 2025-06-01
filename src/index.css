@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: #0F172A;
+  --accent: #D4A94E;
+  --text-primary: #1E293B;
+  --text-secondary: #64748B;
+  --bg-light: #F8FAFC;
+  --bg-white: #FFFFFF;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  @apply text-gray-800 bg-gray-50;
+}
+
+.container {
+  @apply px-4 mx-auto max-w-7xl;
+}
+
+.btn {
+  @apply px-6 py-3 font-medium transition-all duration-300 rounded-md;
+}
+
+.btn-primary {
+  @apply text-white bg-slate-900 hover:bg-slate-800;
+}
+
+.btn-outline {
+  @apply border border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white;
+}
+
+.btn-accent {
+  @apply bg-amber-500 text-white hover:bg-amber-600;
+}
+
+.product-card {
+  @apply overflow-hidden transition-all duration-300 bg-white rounded-lg shadow-sm hover:shadow-md;
+}
+
+.product-card img {
+  @apply object-cover w-full transition-all duration-500;
+}
+
+.product-card:hover img {
+  @apply scale-105;
+}
+
+.section-title {
+  @apply mb-8 text-3xl font-bold text-center md:text-4xl;
+}

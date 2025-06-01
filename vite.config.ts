@@ -10,4 +10,8 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  base: '/', // Important for Vercel
+  build: {
+    outDir: 'dist' // Default, but explicit for clarity
+  }
 });

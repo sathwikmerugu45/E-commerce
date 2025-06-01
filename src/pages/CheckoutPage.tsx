@@ -199,26 +199,29 @@ const CheckoutPage: React.FC = () => {
 
     try {
       // Create order on the backend
-      const response = await fetch(`${process.env.REACT_APP_API_URL}/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "123",
-          shippingInfo: {
-            firstName: formState.firstName,
-            lastName: formState.lastName,
-            email: formState.email,
-            address: formState.address,
-            city: formState.city,
-            country: formState.country,
-            postalCode: formState.postalCode,
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/orders`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          items: cartItems,
-          totalAmount: totalPrice * 1.1,
-        }),
-      });
+          body: JSON.stringify({
+            userId: "123", // You should replace this with actual user ID
+            shippingInfo: {
+              firstName: formState.firstName,
+              lastName: formState.lastName,
+              email: formState.email,
+              address: formState.address,
+              city: formState.city,
+              country: formState.country,
+              postalCode: formState.postalCode,
+            },
+            items: cartItems,
+            totalAmount: totalPrice * 1.1,
+          }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to create order");

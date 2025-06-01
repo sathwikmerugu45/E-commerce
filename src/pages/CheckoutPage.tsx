@@ -32,6 +32,8 @@ interface FormErrors {
   cvv?: string;
 }
 
+const LOCAL_STORAGE_KEY = 'ecommerce_orders';
+
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
   const { cartItems, totalPrice, clearCart } = useCart();
@@ -198,34 +200,39 @@ const CheckoutPage: React.FC = () => {
     setError(null);
 
     try {
-      // Create order on the backend
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/orders`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: "123", // You should replace this with actual user ID
-            shippingInfo: {
-              firstName: formState.firstName,
-              lastName: formState.lastName,
-              email: formState.email,
-              address: formState.address,
-              city: formState.city,
-              country: formState.country,
-              postalCode: formState.postalCode,
-            },
-            items: cartItems,
-            totalAmount: totalPrice * 1.1,
-          }),
-        }
-      );
+      // Create order and save to localStorage
+      const newOrder = {
+        id: Date.now(), // Simple ID generation
+        userId: "guest_" + Math.random().toString(36).substring(2, 9),
+        shippingInfo: {
+          firstName: formState.firstName,
+          lastName: formState.lastName,
+          email: formState.email,
+          address: formState.address,
+          city: formState.city,
+          country: formState.country,
+          postalCode: formState.postalCode,
+        },
+        items: cartItems.map(item => ({
+          id: item.id || Date.now(),
+          productId: item.productId || Date.now(),
+          name: item.name || "Product",
+          price: item.price || 0,
+          quantity: item.quantity || 1,
+          image: item.image || ""
+        })),
+        totalAmount: totalPrice,
+        status: 'pending',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
 
-      if (!response.ok) {
-        throw new Error("Failed to create order");
-      }
+      // Load existing orders
+      const existingOrders = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || '[]');
+      // Add new order
+      const updatedOrders = [...existingOrders, newOrder];
+      // Save back to localStorage
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedOrders));
 
       // Clear the cart and redirect to success page
       clearCart();
@@ -240,7 +247,6 @@ const CheckoutPage: React.FC = () => {
     }
   };
 
-  // Check if form is valid for submit button
   const isFormValid = () => {
     return (
       formState.firstName.trim() &&

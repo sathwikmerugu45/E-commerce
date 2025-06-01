@@ -36,21 +36,39 @@ interface Stats {
   totalRevenue: number;
 }
 
+const LOCAL_STORAGE_KEY = 'ecommerce_orders';
+
 const AdminPage: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [expandedOrderIds, setExpandedOrderIds] = useState<number[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'orders' | 'stats'>('orders');
 
-  const fetchOrders = async () => {
+  const loadOrdersFromLocalStorage = (): Order[] => {
     try {
-      setLoading(true);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/all`);
-      if (!response.ok) throw new Error('Failed to fetch orders');
-      const data = await response.json();
-      setOrders(data);
+      const storedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return storedData ? JSON.parse(storedData) : [];
+    } catch (err) {
+      console.error('Error loading orders from localStorage:', err);
+      return [];
+    }
+  };
+
+  const saveOrdersToLocalStorage = (orders: Order[]) => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(orders));
+    } catch (err) {
+      console.error('Error saving orders to localStorage:', err);
+    }
+  };
+
+  const fetchOrders = () => {
+    setLoading(true);
+    try {
+      const loadedOrders = loadOrdersFromLocalStorage();
+      setOrders(loadedOrders);
       setError(null);
     } catch (err) {
       setError('Failed to load orders. Please try again.');
@@ -60,33 +78,36 @@ const AdminPage: React.FC = () => {
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/stats`);
-      if (!response.ok) throw new Error('Failed to fetch stats');
-      const data = await response.json();
-      setStats(data);
-    } catch (err) {
-      console.error('Failed to load stats:', err);
-    }
+  const calculateStats = (orders: Order[]): Stats => {
+    return {
+      totalOrders: orders.length,
+      pendingOrders: orders.filter(o => o.status === 'pending').length,
+      completedOrders: orders.filter(o => o.status === 'delivered').length,
+      totalRevenue: orders
+        .filter(o => o.status === 'delivered')
+        .reduce((sum, order) => sum + order.totalAmount, 0)
+    };
   };
 
-  const updateOrderStatus = async (orderId: number, newStatus: Order['status']) => {
+  const fetchStats = () => {
+    const loadedOrders = loadOrdersFromLocalStorage();
+    setStats(calculateStats(loadedOrders));
+  };
+
+  const updateOrderStatus = (orderId: number, newStatus: Order['status']) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
+      const loadedOrders = loadOrdersFromLocalStorage();
+      const updatedOrders = loadedOrders.map((order: Order) => 
+        order.id === orderId ? {
+          ...order,
+          status: newStatus,
+          updatedAt: new Date().toISOString()
+        } : order
+      );
       
-      if (!response.ok) throw new Error('Failed to update order');
-      
-      const updatedOrder = await response.json();
-      setOrders(orders.map(order => 
-        order.id === orderId ? updatedOrder : order
-      ));
+      saveOrdersToLocalStorage(updatedOrders);
+      setOrders(updatedOrders);
+      setStats(calculateStats(updatedOrders));
     } catch (err) {
       setError('Failed to update order status');
       console.error(err);

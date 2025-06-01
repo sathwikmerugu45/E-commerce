@@ -46,7 +46,7 @@ function saveData() {
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? 'https://your-vercel-app-url.vercel.app' 
+    ? 'https://e-commerce-pearl-one-24.vercel.app/' 
     : 'http://localhost:5173',
   credentials: true
 }));
